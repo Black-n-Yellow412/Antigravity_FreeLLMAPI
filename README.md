@@ -16,9 +16,9 @@ The patch created by **vahapogut** ([antigravity-add-model](https://github.com/v
 
 | Script | Nickname | Role |
 |---|---|---|
-| [`Antigravity-Reinstall-Public.ps1`](#1-the-main-course-antigravity-reinstall-publicps1) | **The Main Course** | Complete setup: clean uninstall, install, GitHub patch sync, TypeScript build, model injection, tray minimization, and launch shortcut. |
-| [`Antigravity-Sentinel-Public.ps1`](#2-the-appetizer-antigravity-sentinel-publicps1) | **The Appetizer** | Runs at 2:00 AM (or on demand) to check `antigravity.google/download` for new versions, silently pre-downloads the installer, and leaves Antigravity running uninterrupted. |
-| [`Antigravity-PendingUpdate-Public.ps1`](#3-the-nightcap-antigravity-pendingupdate-publicps1) | **The Nightcap** | Runs at 3:00 AM via Windows Task Scheduler to see if a new installer was downloaded. If so, triggers the clean reinstall while you sleep. |
+| [`Antigravity-Reinstall-Public.ps1`](Antigravity-Reinstall-Public.ps1) | **The Main Course** | Complete setup: clean uninstall, install, GitHub patch sync, TypeScript build, model injection, tray minimization, and launch shortcut. |
+| [`Antigravity-Sentinel-Public.ps1`](Antigravity-Sentinel-Public.ps1) | **The Appetizer** | Runs at 2:00 AM (or on demand) to check `antigravity.google/download` for new versions, silently pre-downloads the installer, and leaves Antigravity running uninterrupted. |
+| [`Antigravity-PendingUpdate-Public.ps1`](Antigravity-PendingUpdate-Public.ps1) | **The Nightcap** | Runs at 3:00 AM via Windows Task Scheduler to see if a new installer was downloaded. If so, triggers the clean reinstall while you sleep. |
 
 ---
 
@@ -115,7 +115,7 @@ To remove the scheduled tasks at any time:
 
 | Step | Action | Description |
 |---|---|---|
-| **1. Uninstall** | Clean Slate | Closes running instances and cleanly removes old versions & temporary data. |
+| **1. Uninstall** | Clean Slate | Closes running instances and cleanly removes old versions & temporary data (including child helper processes). |
 | **2. Install** | Fresh Setup | Installs `Antigravity-x64.exe` silently and prepares the binary directories. |
 | **3. Patch Update** | GitHub Sync | Checks GitHub (`vahapogut/antigravity-add-model`) for the latest commit, downloads updates, and compiles TypeScript. |
 | **4. Patch Deploy** | Language Server | Patches Antigravity's language server to support custom OpenAI-compatible endpoints. |
@@ -145,6 +145,7 @@ You can skip specific steps using PowerShell parameters:
 
 ## 💡 Troubleshooting & Known Windows Quirks Solved
 
+- **Child Process Locks (`language_server.exe`):** Antigravity spawns background language server helper processes that hold open file locks even after the main window is closed. The scripts explicitly terminate lingering child processes to ensure uninstalls never get blocked.
 - **Electron JSON Parse Crash (BOM Bug):** Standard PowerShell commands write UTF-8 with a Byte Order Mark (`0xEF, 0xBB, 0xBF`), which causes Electron's `JSON.parse` to silently crash and wipe settings. This script uses .NET `UTF8Encoding($false)` to guarantee valid JSON formatting.
 - **UAC Network Drive Isolation:** When running tasks with elevated Administrator privileges, Windows separates mapped drive tokens. The script applies `EnableLinkedConnections = 1` in `HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System` so your drives remain accessible.
 - **Local HTTP Proxy Blockade:** Modern Chromium/Electron apps block insecure local HTTP endpoints. The generated shortcut includes `--allow-running-insecure-content` and `--disable-web-security` to allow seamless local router connectivity.
@@ -156,4 +157,4 @@ You can skip specific steps using PowerShell parameters:
 - [Google Antigravity](https://antigravity.google) by Google
 - [FreeLLMAPI](https://github.com/tashfeenahmed/freellmapi) by Tashfeen Ahmed
 - [antigravity-add-model](https://github.com/vahapogut/antigravity-add-model) by Vahap Öğüt
-- Suite automation scripts provided for community use under MIT License.
+- Suite automation scripts provided for community use under [MIT License](LICENSE).
